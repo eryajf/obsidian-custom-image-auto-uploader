@@ -1,6 +1,9 @@
 [简体中文](https://github.com/haierkeys/obsidian-custom-image-auto-uploader/blob/master/docs/README.zh-CN.md) / [English](https://github.com/haierkeys/obsidian-custom-image-auto-uploader/blob/master/README.md) / [日本語](https://github.com/haierkeys/obsidian-custom-image-auto-uploader/blob/master/docs/README.ja.md) / [한국어](https://github.com/haierkeys/obsidian-custom-image-auto-uploader/blob/master/docs/README.ko.md) / [繁體中文](https://github.com/haierkeys/obsidian-custom-image-auto-uploader/blob/master/docs/README.zh-TW.md)
 
 
+If you have any questions, please create an [issue](https://github.com/haierkeys/obsidian-custom-image-auto-uploader/issues/new), or join the Telegram group for help: [https://t.me/obsidian_users](https://t.me/obsidian_users)
+
+
 
 <h1 align="center">Obsidian Custom Image Auto Uploader</h1>
 

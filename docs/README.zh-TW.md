@@ -1,6 +1,8 @@
 [简体中文](https://github.com/haierkeys/obsidian-custom-image-auto-uploader/blob/master/docs/README.zh-CN.md) / [English](https://github.com/haierkeys/obsidian-custom-image-auto-uploader/blob/master/README.md) / [日本語](https://github.com/haierkeys/obsidian-custom-image-auto-uploader/blob/master/docs/README.ja.md) / [한국어](https://github.com/haierkeys/obsidian-custom-image-auto-uploader/blob/master/docs/README.ko.md) / [繁體中文](https://github.com/haierkeys/obsidian-custom-image-auto-uploader/blob/master/docs/README.zh-TW.md)
 
 
+有問題請新建 [issue](https://github.com/haierkeys/obsidian-custom-image-auto-uploader/issues/new) , 或加入電報交流群尋求幫助: [https://t.me/obsidian_users](https://t.me/obsidian_users)
+
 
 
 <h1 align="center">Obsidian Custom Image Auto Uploader</h1>
@@ -71,7 +73,7 @@
 5.  **驗證**
     創建一個新筆記，複製圖片進去，檢查是否上傳成功。
 
-## ⚙️ 後端服務 (API 網关)
+## ⚙️ 後端服務 (API 網關)
 
 本插件的高級功能需要配合 **Custom Image Gateway** 使用。
 
