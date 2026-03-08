@@ -55,6 +55,8 @@ export interface PluginSettings {
   compressMaxWidth: number
   compressMaxHeight: number
   compressQuality: number
+  //下载图片文件名格式: 'original' | 'random' | 'timestamp'
+  downloadFilenameFormat: string
   //内容部分上传设置
   contentSet: UploadSet
   //元数据上传设置
@@ -95,6 +97,8 @@ export const DEFAULT_SETTINGS: PluginSettings = {
   compressMaxWidth: 1200,
   compressMaxHeight: 1200,
   compressQuality: 1,
+  // 下载图片文件名格式
+  downloadFilenameFormat: "timestamp",
   // 内容部分上传设置
   contentSet: { key: "", type: ImageSvrProcessMode.none.value, width: "0", height: "0" },
   // 元数据上传设置
@@ -218,6 +222,21 @@ export class SettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.excludeDomains)
           .onChange(async (value) => {
             this.plugin.settings.excludeDomains = value
+            await this.plugin.saveSettings()
+          })
+      )
+
+    new Setting(set)
+      .setName($("下载图片文件名格式"))
+      .setDesc($("设置下载图片后的文件名格式"))
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption("timestamp", $("时间戳") + " (20260308104612)")
+          .addOption("random", $("随机字符串") + " (0U1ts)")
+          .addOption("original", $("原始文件名"))
+          .setValue(this.plugin.settings.downloadFilenameFormat)
+          .onChange(async (value) => {
+            this.plugin.settings.downloadFilenameFormat = value
             await this.plugin.saveSettings()
           })
       )

@@ -102,4 +102,12 @@ export default <LangMap>{
   "上传全库图片": "Upload Whole Vault Images",
   "删除未引用图片（全库）": "Delete all unreferenced images in the vault",
   "已删除 ${count} 张未引用图片": "Deleted ${count} unreferenced images",
+  "未发现未引用图片": "No unreferenced images found",
+
+  // Download filename format
+  "下载图片文件名格式": "Download Image Filename Format",
+  "设置下载图片后的文件名格式": "Set the filename format for downloaded images",
+  "时间戳": "Timestamp",
+  "随机字符串": "Random String",
+  "原始文件名": "Original Filename",
 };

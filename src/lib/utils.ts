@@ -90,6 +90,43 @@ export function getFileRandomSaveKey(): string {
 }
 
 /**
+ * 生成基于时间戳的文件名
+ * @returns 格式为 YYYYMMDDHHmmss 的时间戳字符串
+ */
+export function getTimestampFileName(): string {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const hours = String(now.getHours()).padStart(2, '0')
+  const minutes = String(now.getMinutes()).padStart(2, '0')
+  const seconds = String(now.getSeconds()).padStart(2, '0')
+  const timestamp = `${year}${month}${day}${hours}${minutes}${seconds}`
+
+  // 为了避免同一秒内的文件名冲突，添加毫秒
+  const ms = String(now.getMilliseconds()).padStart(3, '0')
+  return `${timestamp}${ms}`
+}
+
+/**
+ * 根据配置的格式生成文件名
+ * @param format - 文件名格式：'original' | 'random' | 'timestamp'
+ * @param originalName - 原始文件名（可选）
+ * @returns 生成的文件名
+ */
+export function generateFileName(format: string, originalName?: string): string {
+  switch (format) {
+    case 'timestamp':
+      return getTimestampFileName()
+    case 'original':
+      return originalName && originalName.trim() !== '' ? originalName : getTimestampFileName()
+    case 'random':
+    default:
+      return getFileRandomSaveKey()
+  }
+}
+
+/**
  * 检查并创建文件夹
  * @param path - 文件夹路径
  * @param vault - Vault实例
@@ -227,10 +264,9 @@ export async function imageDown(url: string, plugin: CustomImageAutoUploader): P
     return { err: true, msg: $("下载文件不是允许的图片类型") }
   }
 
-  let urlObj = new URL(url)
-
   try {
-    const name = getUrlFileName(url, false) != "" ? getUrlFileName(url, false) : getFileRandomSaveKey()
+    const originalName = getUrlFileName(url, false)
+    const name = generateFileName(plugin.settings.downloadFilenameFormat, originalName)
     const path = `${name}.${type.ext}`
     const userPath = await getAttachmentSavePath(path, plugin)
     checkCreateFolder(getDirname(userPath), this.app.vault)
