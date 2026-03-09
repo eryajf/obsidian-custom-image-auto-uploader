@@ -69,6 +69,17 @@ export default class CustomImageAutoUploader extends Plugin {
 
     // 注册命令
     this.addCommand({
+      id: "sync-current-images",
+      name: $("一键上下传照片"),
+      callback: async () => {
+        this.resetStatus("all", true)
+        await this.ContentImageAutoHandle(true)
+        await this.MetadataImageAutoHandle(true)
+        showTaskNotice(this, "all")
+        statusCheck(this)
+      },
+    })
+    this.addCommand({
       id: "down-current-images",
       name: $("下载当前笔记图片"),
       callback: async () => {
@@ -206,16 +217,10 @@ export default class CustomImageAutoUploader extends Plugin {
       statusCheck(this)
     }
 
-    // 第二次循环：批量异步处理任务
+    // 串行处理每张图片，确保下载和替换是原子操作，避免错位
     let isModify = false
-    const downloadResults = await Promise.all(
-      downloadTasks.map(async (task) => {
-        const result = await imageDown(task.imageUrl, this)
-        return { task, result }
-      })
-    )
-    // 处理下载结果
-    for (const { task, result } of downloadResults) {
+    for (const task of downloadTasks) {
+      const result = await imageDown(task.imageUrl, this)
       if (result.err) {
         showErrorNotice(result.msg)
       } else if (result.path) {
@@ -231,6 +236,9 @@ export default class CustomImageAutoUploader extends Plugin {
 
       this.app.workspace.activeEditor?.editor?.setValue(filePropertyContent + fileContent)
       await this.app.workspace.activeEditor?.editor?.setCursor({ line: cursor.line - filePropertyContentEndLine, ch: 0 })
+
+      // 等待编辑器状态同步，避免后续操作读取到旧内容
+      await sleep(100)
 
       this.fromPluginSet = false
     }
@@ -290,16 +298,10 @@ export default class CustomImageAutoUploader extends Plugin {
       statusCheck(this)
     }
 
-    // 第二次循环：批量异步处理任务
+    // 串行处理每张图片，确保上传和替换是原子操作，避免错位
     let isModify = false
-    const uploadResults = await Promise.all(
-      uploadTasks.map(async (task) => {
-        const result = await imageUpload(task.imageFile, this.settings.contentSet, this)
-        return { task, result }
-      })
-    )
-    // 处理上传结果
-    for (const { task, result } of uploadResults) {
+    for (const task of uploadTasks) {
+      const result = await imageUpload(task.imageFile, this.settings.contentSet, this)
       if (result.err) {
         showErrorNotice(result.msg)
       } else if (result.imageUrl) {
@@ -318,6 +320,9 @@ export default class CustomImageAutoUploader extends Plugin {
 
       this.app.workspace.activeEditor?.editor?.setValue(filePropertyContent + fileContent)
       await this.app.workspace.activeEditor?.editor?.setCursor(cursor)
+
+      // 等待编辑器状态同步，避免后续操作读取到旧内容
+      await sleep(100)
 
       this.fromPluginSet = false
     }
@@ -356,17 +361,10 @@ export default class CustomImageAutoUploader extends Plugin {
       }
     }
 
-    // 第二次循环：批量异步处理任务
+    // 串行处理每张图片，确保下载和替换是原子操作，避免错位
     let isModify = false
-    const downloadResults = await Promise.all(
-      downloadTasks.map(async (task) => {
-        const result = await imageDown(task.imageUrl, this)
-        return { task, result }
-      })
-    )
-
-    // 处理下载结果
-    for (const { task, result } of downloadResults) {
+    for (const task of downloadTasks) {
+      const result = await imageDown(task.imageUrl, this)
       if (result.err) {
         showErrorNotice(result.msg)
       } else if (result.path && task.metadataItem) {
@@ -387,9 +385,9 @@ export default class CustomImageAutoUploader extends Plugin {
           frontmatter[item.key] = item.type === "string" ? item.value[0] : item.value
         }
       })
-      setTimeout(() => {
-        this.fromPluginSet = false
-      }, 1000)
+      // 等待 frontmatter 更新完成
+      await sleep(100)
+      this.fromPluginSet = false
     }
   }
 
@@ -427,17 +425,10 @@ export default class CustomImageAutoUploader extends Plugin {
         statusCheck(this)
       }
     }
-    // 第二次循环：批量异步处理任务
+    // 串行处理每张图片，确保上传和替换是原子操作，避免错位
     let isModify = false
-    const uploadResults = await Promise.all(
-      uploadTasks.map(async (task) => {
-        const result = await imageUpload(task.imageFile, task.metadataItem?.params, this)
-        return { task, result }
-      })
-    )
-
-    // 处理上传结果
-    for (const { task, result } of uploadResults) {
+    for (const task of uploadTasks) {
+      const result = await imageUpload(task.imageFile, task.metadataItem?.params, this)
       if (result.err) {
         showErrorNotice(result.msg)
       } else if (result.imageUrl && task.metadataItem) {
@@ -459,9 +450,9 @@ export default class CustomImageAutoUploader extends Plugin {
           frontmatter[item.key] = item.type === "string" ? item.value[0] : item.value
         }
       })
-      setTimeout(() => {
-        this.fromPluginSet = false
-      }, 1000)
+      // 等待 frontmatter 更新完成
+      await sleep(100)
+      this.fromPluginSet = false
     }
   }
 
@@ -505,14 +496,9 @@ export default class CustomImageAutoUploader extends Plugin {
         let fileContent = await this.app.vault.read(item.file)
         let isModify = false
 
-        const downloadResults = await Promise.all(
-          item.downloadTasks.map(async (task) => {
-            const result = await imageDown(task.imageUrl, this)
-            return { task, result }
-          })
-        )
-
-        for (const { task, result } of downloadResults) {
+        // 串行处理每张图片，确保下载和替换是原子操作，避免错位
+        for (const task of item.downloadTasks) {
+          const result = await imageDown(task.imageUrl, this)
           if (result.err) {
             showErrorNotice(result.msg)
           } else if (result.path) {
@@ -528,9 +514,8 @@ export default class CustomImageAutoUploader extends Plugin {
         }
       }
     } finally {
-      setTimeout(() => {
-        this.fromPluginSet = false
-      }, 1500)
+      await sleep(100)
+      this.fromPluginSet = false
     }
   }
 
@@ -577,14 +562,9 @@ export default class CustomImageAutoUploader extends Plugin {
         let fileContent = await this.app.vault.read(item.file)
         let isModify = false
 
-        const uploadResults = await Promise.all(
-          item.uploadTasks.map(async (task) => {
-            const result = await imageUpload(task.imageFile, this.settings.contentSet, this)
-            return { task, result }
-          })
-        )
-
-        for (const { task, result } of uploadResults) {
+        // 串行处理每张图片，确保上传和替换是原子操作，避免错位
+        for (const task of item.uploadTasks) {
+          const result = await imageUpload(task.imageFile, this.settings.contentSet, this)
           if (result.err) {
             showErrorNotice(result.msg)
           } else if (result.imageUrl) {
@@ -602,9 +582,8 @@ export default class CustomImageAutoUploader extends Plugin {
         }
       }
     } finally {
-      setTimeout(() => {
-        this.fromPluginSet = false
-      }, 1500)
+      await sleep(100)
+      this.fromPluginSet = false
     }
   }
 

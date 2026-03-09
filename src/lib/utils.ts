@@ -383,7 +383,7 @@ export async function imageUpload(file: TFile, postData: UploadSet | undefined, 
                       ? `${originalWidth}x${originalHeight} → ${width}x${height}\n`
                       : ""
                     const noticeMsg = `${file.name}\n${file.extension} → ${targetExtension}\n${sizeInfo}${(originalSize / 1024).toFixed(1)}KB → ${(compressedSize / 1024).toFixed(1)}KB (-${ratio}%)`
-                    new Notice(noticeMsg, 3000)
+                    new Notice(noticeMsg, 6000)
                   }
 
                   resolve(null)
