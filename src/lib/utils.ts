@@ -377,6 +377,15 @@ export async function imageUpload(file: TFile, postData: UploadSet | undefined, 
                   console.log(`  File: ${(originalSize / 1024).toFixed(1)}KB → ${(compressedSize / 1024).toFixed(1)}KB (${ratio}% reduced)`)
                   console.log(`  Output: ${outputFileName}`)
 
+                  // 弹窗通知压缩结果
+                  if (!plugin.settings.isCloseNotice) {
+                    const sizeInfo = (originalWidth !== width || originalHeight !== height)
+                      ? `${originalWidth}x${originalHeight} → ${width}x${height}\n`
+                      : ""
+                    const noticeMsg = `${file.name}\n${file.extension} → ${targetExtension}\n${sizeInfo}${(originalSize / 1024).toFixed(1)}KB → ${(compressedSize / 1024).toFixed(1)}KB (-${ratio}%)`
+                    new Notice(noticeMsg, 3000)
+                  }
+
                   resolve(null)
                 })
               }
