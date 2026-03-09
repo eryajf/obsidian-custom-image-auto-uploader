@@ -55,6 +55,8 @@ export interface PluginSettings {
   compressMaxWidth: number
   compressMaxHeight: number
   compressQuality: number
+  //压缩输出格式: 'original' | 'webp' | 'jpeg'
+  compressFormat: string
   //下载图片文件名格式: 'original' | 'random' | 'timestamp'
   downloadFilenameFormat: string
   //内容部分上传设置
@@ -96,7 +98,8 @@ export const DEFAULT_SETTINGS: PluginSettings = {
   isCompress: true,
   compressMaxWidth: 1200,
   compressMaxHeight: 1200,
-  compressQuality: 1,
+  compressQuality: 0.8,
+  compressFormat: "webp",
   // 下载图片文件名格式
   downloadFilenameFormat: "timestamp",
   // 内容部分上传设置
@@ -257,6 +260,21 @@ export class SettingTab extends PluginSettingTab {
       )
 
     if (this.plugin.settings.isCompress) {
+      new Setting(set)
+        .setName($("上传速度优化 - 输出格式"))
+        .setDesc($("压缩后的图片格式,WebP格式压缩效果最好"))
+        .addDropdown((dropdown) =>
+          dropdown
+            .addOption("original", $("保持原格式"))
+            .addOption("webp", "WebP " + $("(推荐)"))
+            .addOption("jpeg", "JPEG")
+            .setValue(this.plugin.settings.compressFormat)
+            .onChange(async (value) => {
+              this.plugin.settings.compressFormat = value
+              await this.plugin.saveSettings()
+            })
+        )
+
       new Setting(set)
         .setName($("上传速度优化 - 压缩质量"))
         .setDesc($("压缩后的图片质量,范围0-1,默认0.8"))

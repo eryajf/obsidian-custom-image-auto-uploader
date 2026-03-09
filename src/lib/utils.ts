@@ -29,6 +29,8 @@ export interface ImageUploadResult {
   msg: string
   imageUrl?: string
   apiError?: string
+  // 压缩后的文件名（可能因格式转换而改变扩展名）
+  compressedFileName?: string
 }
 
 /**
@@ -296,6 +298,9 @@ export async function imageUpload(file: TFile, postData: UploadSet | undefined, 
   if (!postData) return { err: true, msg: $("扩展参数为空") }
 
   let compressedBody = body
+  let outputFileName = file.name
+  let outputMimeType = `image/${file.extension}`
+  const originalSize = body.byteLength
 
   if (plugin.settings.isCompress) {
     try {
@@ -307,6 +312,23 @@ export async function imageUpload(file: TFile, postData: UploadSet | undefined, 
       const blob = new Blob([body], { type: `image/${file.extension}` })
       const url = URL.createObjectURL(blob)
 
+      // 确定输出格式（默认为 webp 以获得最佳压缩效果）
+      let targetFormat = plugin.settings.compressFormat ?? "webp"
+      let targetMimeType: string
+      let targetExtension: string
+
+      if (targetFormat === "webp") {
+        targetMimeType = "image/webp"
+        targetExtension = "webp"
+      } else if (targetFormat === "jpeg") {
+        targetMimeType = "image/jpeg"
+        targetExtension = "jpg"
+      } else {
+        // 保持原格式
+        targetMimeType = `image/${file.extension}`
+        targetExtension = file.extension
+      }
+
       await new Promise((resolve, reject) => {
         img.onload = () => {
           // 设置压缩后的尺寸,保持宽高比
@@ -314,6 +336,8 @@ export async function imageUpload(file: TFile, postData: UploadSet | undefined, 
           const maxHeight = plugin.settings.compressMaxHeight
           let width = img.width
           let height = img.height
+          const originalWidth = width
+          const originalHeight = height
 
           if (width > maxWidth) {
             height = Math.round((height * maxWidth) / width)
@@ -330,17 +354,31 @@ export async function imageUpload(file: TFile, postData: UploadSet | undefined, 
           // 绘制并压缩
           ctx?.drawImage(img, 0, 0, width, height)
 
-          // 转换为二进制
+          // 转换为二进制，使用目标格式
           canvas.toBlob(
             (blob) => {
               if (blob) {
                 blob.arrayBuffer().then((buffer) => {
                   compressedBody = buffer
+                  // 更新输出文件名和MIME类型
+                  const baseName = file.name.substring(0, file.name.lastIndexOf("."))
+                  outputFileName = `${baseName}.${targetExtension}`
+                  outputMimeType = targetMimeType
+
+                  // 打印压缩效果日志
+                  const compressedSize = buffer.byteLength
+                  const ratio = ((1 - compressedSize / originalSize) * 100).toFixed(1)
+                  console.log(`[Image Compress] ${file.name}`)
+                  console.log(`  Format: ${file.extension} → ${targetExtension}`)
+                  console.log(`  Size: ${originalWidth}x${originalHeight} → ${width}x${height}`)
+                  console.log(`  File: ${(originalSize / 1024).toFixed(1)}KB → ${(compressedSize / 1024).toFixed(1)}KB (${ratio}% reduced)`)
+                  console.log(`  Output: ${outputFileName}`)
+
                   resolve(null)
                 })
               }
             },
-            `image/${file.extension}`,
+            targetMimeType,
             plugin.settings.compressQuality
           )
         }
@@ -354,7 +392,11 @@ export async function imageUpload(file: TFile, postData: UploadSet | undefined, 
   }
 
   let requestData = new FormData()
-  requestData.append("imagefile", new Blob([compressedBody], { type: `image/${file.extension}` }), file.name)
+  const uploadBlob = new Blob([compressedBody], { type: outputMimeType })
+  requestData.append("imagefile", uploadBlob, outputFileName)
+
+  // 打印实际上传的数据信息
+  console.log(`[Image Upload] Sending: ${outputFileName} (${(uploadBlob.size / 1024).toFixed(1)}KB, ${outputMimeType})`)
 
   Object.keys(postData).forEach((v, i, p) => {
     requestData.append(v, postData[v])
