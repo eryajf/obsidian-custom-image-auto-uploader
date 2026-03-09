@@ -5,6 +5,7 @@ import CustomImageAutoUploader from "../main";
 import { UploadSet } from "../setting";
 import { Metadata } from "./interface";
 import { $ } from "../lang/lang";
+import { uploadToDoge, DogeConfig } from "./storage/doge";
 
 
 export const IMAGE_MIME_TYPES: Record<string, string[]> = {
@@ -339,11 +340,13 @@ export async function imageUpload(file: TFile, postData: UploadSet | undefined, 
           const originalWidth = width
           const originalHeight = height
 
-          if (width > maxWidth) {
+          // 只有当 maxWidth > 0 且图片宽度超过限制时才缩放
+          if (maxWidth > 0 && width > maxWidth) {
             height = Math.round((height * maxWidth) / width)
             width = maxWidth
           }
-          if (height > maxHeight) {
+          // 只有当 maxHeight > 0 且图片高度超过限制时才缩放
+          if (maxHeight > 0 && height > maxHeight) {
             width = Math.round((width * maxHeight) / height)
             height = maxHeight
           }
@@ -397,6 +400,47 @@ export async function imageUpload(file: TFile, postData: UploadSet | undefined, 
 
   // 打印实际上传的数据信息
   console.log(`[Image Upload] Sending: ${outputFileName} (${(uploadBlob.size / 1024).toFixed(1)}KB, ${outputMimeType})`)
+
+  // 根据存储模式选择上传方式
+  if (plugin.settings.storageMode === "doge") {
+    // 多吉云直传
+    try {
+      const dogeConfig: DogeConfig = {
+        accessKeyId: plugin.settings.dogeAccessKeyId,
+        accessKeySecret: plugin.settings.dogeAccessKeySecret,
+        bucketName: plugin.settings.dogeBucketName,
+        customPath: plugin.settings.dogeCustomPath,
+        accessUrlPrefix: plugin.settings.dogeAccessUrlPrefix
+      }
+
+      // 生成文件路径 (日期路径 + 文件名)
+      const now = new Date()
+      const datePath = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}/`
+      const fileKey = datePath + outputFileName
+
+      const imageUrl = await uploadToDoge(dogeConfig, fileKey, compressedBody, outputMimeType)
+
+      // 添加随机查询参数
+      let finalUrl = imageUrl
+      if (plugin.settings.uploadImageRandomSearch) {
+        finalUrl = imageUrl + "?" + generateRandomString(10)
+      }
+
+      console.log(`[Image Upload] Success: ${finalUrl}`)
+
+      if (plugin.settings.isDeleteSource && file instanceof TFile) {
+        plugin.app.fileManager.trashFile(file)
+      }
+
+      return { err: false, msg: "上传成功", imageUrl: finalUrl }
+    } catch (error) {
+      console.error("[Image Upload] DogeCloud error:", error)
+      return { err: true, msg: $("上传失败:") + error.message }
+    }
+  }
+
+  // API 网关上传
+  if (!postData) return { err: true, msg: $("扩展参数为空") }
 
   Object.keys(postData).forEach((v, i, p) => {
     requestData.append(v, postData[v])

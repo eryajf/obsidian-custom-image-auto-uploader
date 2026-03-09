@@ -38,10 +38,18 @@ export interface PluginSettings {
   isAutoDown: boolean
   isCloseNotice: boolean
   afterUploadTimeout: number
+  //存储模式: 'api' | 'doge'
+  storageMode: string
   //API地址
   api: string
   //API Token
   apiToken: string
+  //多吉云配置
+  dogeAccessKeyId: string
+  dogeAccessKeySecret: string
+  dogeBucketName: string
+  dogeCustomPath: string
+  dogeAccessUrlPrefix: string
   clipboardReadTip: string
   //处理排除的域名清单
   excludeDomains: string
@@ -83,10 +91,18 @@ export const DEFAULT_SETTINGS: PluginSettings = {
   isCloseNotice: true,
   // 上传后的超时时间，单位为毫秒
   afterUploadTimeout: 1000,
+  // 存储模式
+  storageMode: "api",
   // API 网关地址
   api: "http://127.0.0.1:36677/upload",
   // API 令牌
   apiToken: "",
+  // 多吉云配置
+  dogeAccessKeyId: "",
+  dogeAccessKeySecret: "",
+  dogeBucketName: "",
+  dogeCustomPath: "",
+  dogeAccessUrlPrefix: "",
   clipboardReadTip: "",
   // 排除的域名列表
   excludeDomains: "",
@@ -174,42 +190,126 @@ export class SettingTab extends PluginSettingTab {
       )
 
     new Setting(set)
-      .setName("| " + $("API 网关"))
+      .setName("| " + $("存储设置"))
       .setHeading()
       .setClass("custom-image-auto-uploader-settings-tag")
 
-    const root2 = document.createElement("div")
-    root2.className = "custom-image-auto-uploader-settings"
-    set.appendChild(root2)
-
-    const reactRoot2 = createRoot(root2)
-    reactRoot2.render(<SettingsView plugin={this.plugin} />)
-
-    const api = new Setting(set)
-      .setName($("API 网关地址"))
-      .setDesc($("Custom Image Gateway 地址"))
-      .addText((text) =>
-        text
-          .setPlaceholder($("输入您的 Custom Image Gateway 地址"))
-          .setValue(this.plugin.settings.api)
+    new Setting(set)
+      .setName($("存储模式"))
+      .setDesc($("选择图片上传的目标存储"))
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption("api", $("API 网关"))
+          .addOption("doge", $("多吉云"))
+          .setValue(this.plugin.settings.storageMode || "api")
           .onChange(async (value) => {
-            this.plugin.settings.api = value
+            this.plugin.settings.storageMode = value
+            this.display()
             await this.plugin.saveSettings()
           })
       )
 
-    const apiToken = new Setting(set)
-      .setName($("API 访问令牌"))
-      .setDesc($("用于访问API的令牌"))
-      .addText((text) =>
-        text
-          .setPlaceholder($("输入您的 API 访问令牌"))
-          .setValue(this.plugin.settings.apiToken)
-          .onChange(async (value) => {
-            this.plugin.settings.apiToken = value
-            await this.plugin.saveSettings()
-          })
-      )
+    if (this.plugin.settings.storageMode === "doge") {
+      // 多吉云配置
+      new Setting(set)
+        .setName($("AccessKey ID"))
+        .setDesc($("多吉云 AccessKey ID"))
+        .addText((text) =>
+          text
+            .setPlaceholder($("输入 AccessKey ID"))
+            .setValue(this.plugin.settings.dogeAccessKeyId)
+            .onChange(async (value) => {
+              this.plugin.settings.dogeAccessKeyId = value
+              await this.plugin.saveSettings()
+            })
+        )
+
+      new Setting(set)
+        .setName($("AccessKey Secret"))
+        .setDesc($("多吉云 AccessKey Secret"))
+        .addText((text) =>
+          text
+            .setPlaceholder($("输入 AccessKey Secret"))
+            .setValue(this.plugin.settings.dogeAccessKeySecret)
+            .onChange(async (value) => {
+              this.plugin.settings.dogeAccessKeySecret = value
+              await this.plugin.saveSettings()
+            })
+        )
+
+      new Setting(set)
+        .setName($("Bucket 名称"))
+        .setDesc($("存储空间名称（不是 s3Bucket，是控制台显示的空间名）"))
+        .addText((text) =>
+          text
+            .setPlaceholder("mybucket")
+            .setValue(this.plugin.settings.dogeBucketName)
+            .onChange(async (value) => {
+              this.plugin.settings.dogeBucketName = value
+              await this.plugin.saveSettings()
+            })
+        )
+
+      new Setting(set)
+        .setName($("自定义路径"))
+        .setDesc($("存储路径前缀,如 images/obsidian"))
+        .addText((text) =>
+          text
+            .setPlaceholder("images/obsidian")
+            .setValue(this.plugin.settings.dogeCustomPath)
+            .onChange(async (value) => {
+              this.plugin.settings.dogeCustomPath = value
+              await this.plugin.saveSettings()
+            })
+        )
+
+      new Setting(set)
+        .setName($("访问URL前缀"))
+        .setDesc($("CDN或访问域名,如 https://cdn.example.com"))
+        .addText((text) =>
+          text
+            .setPlaceholder("https://cdn.example.com")
+            .setValue(this.plugin.settings.dogeAccessUrlPrefix)
+            .onChange(async (value) => {
+              this.plugin.settings.dogeAccessUrlPrefix = value
+              await this.plugin.saveSettings()
+            })
+        )
+    } else {
+      // API 网关配置
+      const root2 = document.createElement("div")
+      root2.className = "custom-image-auto-uploader-settings"
+      set.appendChild(root2)
+
+      const reactRoot2 = createRoot(root2)
+      reactRoot2.render(<SettingsView plugin={this.plugin} />)
+
+      new Setting(set)
+        .setName($("API 网关地址"))
+        .setDesc($("Custom Image Gateway 地址"))
+        .addText((text) =>
+          text
+            .setPlaceholder($("输入您的 Custom Image Gateway 地址"))
+            .setValue(this.plugin.settings.api)
+            .onChange(async (value) => {
+              this.plugin.settings.api = value
+              await this.plugin.saveSettings()
+            })
+        )
+
+      new Setting(set)
+        .setName($("API 访问令牌"))
+        .setDesc($("用于访问API的令牌"))
+        .addText((text) =>
+          text
+            .setPlaceholder($("输入您的 API 访问令牌"))
+            .setValue(this.plugin.settings.apiToken)
+            .onChange(async (value) => {
+              this.plugin.settings.apiToken = value
+              await this.plugin.saveSettings()
+            })
+        )
+    }
 
     new Setting(set)
       .setName("| " + $("下载"))

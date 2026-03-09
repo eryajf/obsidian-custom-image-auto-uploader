@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npm run build:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "WebFetch(domain:docs.dogecloud.com)",
+      "WebFetch(domain:r.jina.ai)"
     ]
   }
 }
