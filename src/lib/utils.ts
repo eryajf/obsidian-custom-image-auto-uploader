@@ -303,7 +303,22 @@ export async function imageUpload(file: TFile, postData: UploadSet | undefined, 
   let outputMimeType = `image/${file.extension}`
   const originalSize = body.byteLength
 
-  if (plugin.settings.isCompress) {
+  // GIF 文件特殊处理
+  const isGif = file.extension.toLowerCase() === "gif"
+
+  if (isGif) {
+    // 检查 GIF 文件大小限制
+    const maxSizeBytes = (plugin.settings.gifMaxSizeMB || 2) * 1024 * 1024
+    if (originalSize > maxSizeBytes) {
+      const sizeMB = (originalSize / 1024 / 1024).toFixed(2)
+      const msg = $("GIF文件过大") + `: ${file.name} (${sizeMB}MB > ${plugin.settings.gifMaxSizeMB}MB)`
+      new Notice(msg, 6000)
+      return { err: true, msg }
+    }
+  }
+
+  // GIF 文件跳过压缩，保持动画效果
+  if (plugin.settings.isCompress && !isGif) {
     try {
       const img = new Image()
       const canvas = document.createElement("canvas")

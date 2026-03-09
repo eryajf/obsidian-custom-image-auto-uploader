@@ -65,6 +65,8 @@ export interface PluginSettings {
   compressQuality: number
   //压缩输出格式: 'original' | 'webp' | 'jpeg'
   compressFormat: string
+  //GIF文件大小限制，单位MB，超过则跳过上传
+  gifMaxSizeMB: number
   //下载图片文件名格式: 'original' | 'random' | 'timestamp'
   downloadFilenameFormat: string
   //内容部分上传设置
@@ -116,6 +118,8 @@ export const DEFAULT_SETTINGS: PluginSettings = {
   compressMaxHeight: 1200,
   compressQuality: 0.8,
   compressFormat: "webp",
+  // GIF文件大小限制，单位MB
+  gifMaxSizeMB: 2,
   // 下载图片文件名格式
   downloadFilenameFormat: "timestamp",
   // 内容部分上传设置
@@ -405,6 +409,16 @@ export class SettingTab extends PluginSettingTab {
           })
         )
     }
+
+    new Setting(set)
+      .setName($("GIF文件大小限制"))
+      .setDesc($("超过此大小的GIF文件将跳过上传，单位MB，0表示不限制"))
+      .addText((text) =>
+        text.setValue(this.plugin.settings.gifMaxSizeMB.toString()).onChange(async (value) => {
+          this.plugin.settings.gifMaxSizeMB = Number(value)
+          await this.plugin.saveSettings()
+        })
+      )
 
     new Setting(set)
       .setName($("是否上传后删除原图片"))

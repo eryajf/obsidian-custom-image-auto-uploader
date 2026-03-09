@@ -137,4 +137,9 @@ export default <LangMap>{
   "时间戳": "Timestamp",
   "随机字符串": "Random String",
   "原始文件名": "Original Filename",
+
+  // GIF settings
+  "GIF文件大小限制": "GIF File Size Limit",
+  "超过此大小的GIF文件将跳过上传，单位MB，0表示不限制": "GIF files exceeding this size will be skipped, in MB, 0 means no limit",
+  "GIF文件过大": "GIF file too large, skipped",
 };
