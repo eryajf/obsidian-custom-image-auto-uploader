@@ -1,6 +1,6 @@
 import { Menu, Plugin, TFile, Notice, debounce } from "obsidian";
 
-import { imageDown, imageUpload, statusCheck, replaceInText, replaceInTextForUpload, replaceInTextForDownload, hasExcludeDomain, autoAddExcludeDomain, metadataCacheHandle, generateRandomString, showTaskNotice, showErrorNotice, getAttachmentUploadPath, setMenu } from "./lib/utils";
+import { imageDown, imageUpload, statusCheck, replaceInTextForUpload, replaceInTextForDownload, hasExcludeDomain, autoAddExcludeDomain, metadataCacheHandle, generateRandomString, showTaskNotice, showErrorNotice, getAttachmentUploadPath, setMenu, IMAGE_EXTENSIONS } from "./lib/utils";
 import { SettingTab, PluginSettings, DEFAULT_SETTINGS } from "./setting";
 import { DownTask, UploadTask } from "./lib/interface";
 import { $ } from "./lang/lang";
@@ -310,7 +310,7 @@ export default class CustomImageAutoUploader extends Plugin {
         statusCheck(this)
 
         const searchStr = this.settings.uploadImageRandomSearch ? `?${generateRandomString(10)}` : ""
-        fileContent = replaceInTextForUpload(fileContent, task.matchText, task.imageAlt, result.imageUrl + searchStr)
+        fileContent = replaceInTextForUpload(fileContent, task.matchText, result.imageUrl + searchStr)
         autoAddExcludeDomain(result.imageUrl, this)
       }
     }
@@ -572,7 +572,7 @@ export default class CustomImageAutoUploader extends Plugin {
             this.uploadStatus.current++
             statusCheck(this)
             const searchStr = this.settings.uploadImageRandomSearch ? `?${generateRandomString(10)}` : ""
-            fileContent = replaceInTextForUpload(fileContent, task.matchText, task.imageAlt, result.imageUrl + searchStr)
+            fileContent = replaceInTextForUpload(fileContent, task.matchText, result.imageUrl + searchStr)
             autoAddExcludeDomain(result.imageUrl, this)
           }
         }
@@ -624,10 +624,8 @@ export default class CustomImageAutoUploader extends Plugin {
     // 3. 扫描所有图片文件
     const allFiles = this.app.vault.getFiles();
     const imageFiles = allFiles.filter(file => {
-      // 简单的图片扩展名检查，可以复用 IMAGE_EXTENSIONS 但需要从 utils 导入或在此处定义
-      // 这里使用 file-type 库检查的扩展名列表的一个子集或常见图片格式
       const ext = file.extension.toLowerCase();
-      return ["png", "jpg", "jpeg", "gif", "bmp", "svg", "webp", "avif"].includes(ext);
+      return IMAGE_EXTENSIONS.includes(ext);
     });
 
     let deletedCount = 0;

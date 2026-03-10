@@ -15,6 +15,7 @@ export const IMAGE_MIME_TYPES: Record<string, string[]> = {
   "image/jpeg": ["jpg", "jpeg"],
   "image/png": ["png"],
   "image/webp": ["webp"],
+  "image/svg+xml": ["svg"],
 }
 export const IMAGE_EXTENSIONS = Object.values(IMAGE_MIME_TYPES).flat()
 
@@ -164,12 +165,11 @@ export async function getAttachmentUploadPath(image: string, plugin: CustomImage
  * 替换文本中的内容 (WikiLink format for Uploads)
  * @param content - 原始内容
  * @param search - 要替换的内容
- * @param desc - 描述 (alt text)
  * @param path - 路径 (URL or file path)
- * @returns 替换后的内容: ![desc](path)
+ * @returns 替换后的内容: ![](path)
  */
-export function replaceInTextForUpload(content: string, search: string, desc: string, path: string): string {
-  const newLink = `![${desc}](${path})`
+export function replaceInTextForUpload(content: string, search: string, path: string): string {
+  const newLink = `![](${path})`
   return content.split(search).join(newLink)
 }
 
@@ -192,7 +192,7 @@ export function replaceInTextForDownload(content: string, search: string, desc: 
  */
 export function replaceInText(content: string, search: string, desc: string, path: string, url?: string): string {
   if (url) {
-    return replaceInTextForUpload(content, search, desc, path)
+    return replaceInTextForUpload(content, search, path)
   } else {
     return replaceInTextForDownload(content, search, desc, path)
   }
@@ -258,12 +258,12 @@ export async function imageDown(url: string, plugin: CustomImageAutoUploader): P
   const response = await requestUrl({ url })
 
   if (response.status !== 200) {
-    return { err: false, msg: $("网络错误,请检查网络是否通畅") }
+    return { err: true, msg: $("网络错误,请检查网络是否通畅") }
   }
 
   let type = <FileTypeResult>await fileTypeFromBuffer(response.arrayBuffer)
 
-  if (!IMAGE_EXTENSIONS.includes(type.ext) && type) {
+  if (!type || !IMAGE_EXTENSIONS.includes(type.ext)) {
     return { err: true, msg: $("下载文件不是允许的图片类型") }
   }
 
@@ -272,7 +272,7 @@ export async function imageDown(url: string, plugin: CustomImageAutoUploader): P
     const name = generateFileName(plugin.settings.downloadFilenameFormat, originalName)
     const path = `${name}.${type.ext}`
     const userPath = await getAttachmentSavePath(path, plugin)
-    checkCreateFolder(getDirname(userPath), this.app.vault)
+    checkCreateFolder(getDirname(userPath), plugin.app.vault)
 
     await plugin.app.vault.createBinary(userPath, response.arrayBuffer)
 
@@ -632,9 +632,6 @@ export function setMenu(menu: Menu, plugin: CustomImageAutoUploader, isShowAuto:
   (menu as any)._hasImageUploaderMenu = true
 
   if (isShowAuto) {
-
-    //ddddd
-
     menu.addSeparator()
     menu.addItem((item: MenuItem) => {
       item
