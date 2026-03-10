@@ -1,25 +1,23 @@
-[简体中文](https://github.com/haierkeys/obsidian-custom-image-auto-uploader/blob/master/docs/README.zh-CN.md) / [English](https://github.com/haierkeys/obsidian-custom-image-auto-uploader/blob/master/README.md) / [日本語](https://github.com/haierkeys/obsidian-custom-image-auto-uploader/blob/master/docs/README.ja.md) / [한국어](https://github.com/haierkeys/obsidian-custom-image-auto-uploader/blob/master/docs/README.ko.md) / [繁體中文](https://github.com/haierkeys/obsidian-custom-image-auto-uploader/blob/master/docs/README.zh-TW.md)
 
+有问题请新建 [issue](https://github.com/eryajf/obsidian-custom-image-auto-uploader/issues/new) 
 
-If you have any questions, please create an [issue](https://github.com/haierkeys/obsidian-custom-image-auto-uploader/issues/new), or join the Telegram group for help: [https://t.me/obsidian_users](https://t.me/obsidian_users)
-
-
+> **说明**：本仓库 fork 自 [haierkeys/obsidian-custom-image-auto-uploader](https://github.com/haierkeys/obsidian-custom-image-auto-uploader)，由于改动较大，现已独立维护。感谢原作者的贡献！
 
 <h1 align="center">Obsidian Custom Image Auto Uploader</h1>
 
 <p align="center">
-    <a href="https://github.com/haierkeys/obsidian-custom-image-auto-uploader/releases"><img src="https://img.shields.io/github/release/haierkeys/obsidian-custom-image-auto-uploader?style=flat-square" alt="release"></a>
-    <a href="https://github.com/haierkeys/obsidian-custom-image-auto-uploader/blob/master/LICENSE"><img src="https://img.shields.io/github/license/haierkeys/obsidian-custom-image-auto-uploader?style=flat-square" alt="license"></a>
+    <a href="https://github.com/eryajf/obsidian-custom-image-auto-uploader/releases"><img src="https://img.shields.io/github/release/eryajf/obsidian-custom-image-auto-uploader?style=flat-square" alt="release"></a>
+    <a href="https://github.com/eryajf/obsidian-custom-image-auto-uploader/blob/master/LICENSE"><img src="https://img.shields.io/github/license/eryajf/obsidian-custom-image-auto-uploader?style=flat-square" alt="license"></a>
 </p>
 
 <p align="center">
-  <strong>One-click Cloud Sync and Processing Plugin for Obsidian Note Images</strong>
+  <strong>Obsidian 笔记图片一键云端同步与处理插件</strong>
   <br>
-  <em>Supports Batch Download / Upload / Crop / Compress / Multiple Image Hosting Support</em>
+  <em>支持 批量下载 / 上传 / 裁剪 / 压缩 / 多图床支持</em>
 </p>
 
 <p align="center">
-You can batch download images from notes on PC and mobile devices, batch upload and save them to remote servers, home NAS, WebDAV, or cloud storage (Aliyun OSS, Amazon S3, Cloudflare R2, MinIO), and you can also stretch, crop, and resize images.
+您可以在 电脑和手机 端上将笔记中的图片批量下载, 批量上传保存到远端服务器、家庭 NAS、WebDAV 或者云存储上（阿里云 OSS 、亚马逊 S3 、Cloudflare R2 、MinIO ），并且您还可以对图片进行拉伸裁剪以及修改尺寸。
 </p>
 
 <div align="center">
@@ -28,62 +26,75 @@ You can batch download images from notes on PC and mobile devices, batch upload 
 
 ---
 
-## ✨ Core Features
+## 📝 改进能力
 
-* **⬇️ Batch Download**: One-click download of web images within notes to local storage.
-* **⬇️ Multi-note Batch Download**: Download images from all notes in the entire vault with one click.
-* **☁️ Batch Upload**: Upload local images to remote services, supporting various storage backends:
-    * **Self-hosted Service**: Use in conjunction with [Custom Image Gateway](https://github.com/haierkeys/custom-image-gateway).
-    * **Cloud Storage**: Aliyun OSS, Amazon S3, Cloudflare R2, MinIO, etc.
-    * **General Protocols**: WebDAV, Remote Server, Home NAS.
-* **☁️ Multi-note Batch Upload**: Upload images from all notes in the entire vault with one click.
-* **✂️ Image Processing**: Supports instant image processing in note properties or body (e.g., blog cover images):
-    * Proportional Top-Left Fill (Cover)
-    * Proportional Center Fill (Contain)
-    * Fixed Dimension Stretch (Stretch)
-    * Proportional Fit (Fit)
-* **📱 Full Platform Support**: Windows, MacOS, Linux, Android, iOS.
-* **🖱️ Convenient Operation**: Supports drag-and-drop and paste for automatic upload.
-* **🌍 Multi-language Support**: Built-in multi-language packs.
-* **🗑️ Clean Unconnected Images**: One-click cleanup of local images in the vault that are not linked to any notes.
+- **支持相对路径解析和 Markdown 格式图片上传**：现在可以正确处理相对路径的图片引用，以及 Markdown 格式的图片语法。
+- **添加 SVG 图片格式支持**：扩展了支持的图片格式，新增 SVG 支持。
+- **GIF 文件大小限制国际化**：为 GIF 文件大小限制添加了多语言支持。
+- **一键同步图片命令**：新增一键同步所有图片的便捷命令。
+- **图片压缩结果弹窗通知**：压缩完成后会弹窗显示结果。
+- **插件直接配置对象存储**：支持在插件内直接配置对象存储的上传方式，无需依赖外部网关。
+- **下载图片文件名风格选项**：可以自定义下载图片时的文件命名风格。
 
-## 🗺️ Roadmap
 
-We are continuously improving; here are the future development plans:
 
-- [x] **Clean Unconnected Images**: One-click cleanup of local images in the vault that are not linked to any notes.
+## ✨ 核心功能
 
-> **If you have suggestions for improvement or new ideas, feel free to share them with us by submitting an issue—we will carefully evaluate and adopt suitable suggestions.**
+* **⬇️ 批量下载**：一键将笔记内的网络图片下载至本地。
+* **⬇️ 多笔记批量下载**：可以一键下载整个笔记仓库所有笔记中的图片。
+* **☁️ 批量上传**：将本地图片上传至远端服务，支持多种存储后端：
+    * **自建服务**：配合 [Custom Image Gateway](https://github.com/haierkeys/custom-image-gateway) 使用。
+    * **云存储**：阿里云 OSS, Amazon S3, Cloudflare R2, MinIO 等。
+    * **通用协议**：WebDAV, 远端服务器, 家庭 NAS。
+* **☁️ 多笔记批量上传**：可以一键上传整个笔记仓库所有笔记中的图片。
+* **✂️ 图片处理**：支持在笔记属性或正文中即时处理图片（如博客封面图）：
+    * 等比左上填充 (Cover)
+    * 等比居中填充 (Contain)
+    * 固定尺寸拉伸 (Stretch)
+    * 等比适应 (Fit)
+* **📱 全平台支持**：Windows, MacOS, Linux, Android, iOS。
+* **🖱️ 便捷操作**：支持拖拽, 粘贴自动上传。
+* **🌍 多语言支持**：内置多国语言包。
+* **🗑️ 清理未连接图片**：可以一键清理笔记仓库中未和笔记连接的本地图片。
 
-## 🚀 Quick Start
 
-1.  **Install Plugin**
-    Open the Obsidian community plugin market, search for **Custom Image Auto Uploader**, and install.
+## 🗺️ 路线图 (Roadmap)
 
-2.  **Configure Gateway (Optional)**
-    If using a self-hosted image host, please set **Upload Settings** > **API Gateway Address** to your **Custom Image Gateway** address.
-    > Example: `http://127.0.0.1:9000/api/upload`
+我们正在持续改进，以下是未来的开发计划：
 
-3.  **Configure Authentication**
-    Set the **API Access Token** (Token) to ensure security.
+- [x] **清理未连接图片**：可以一键清理笔记仓库中未和笔记连接的本地图片。
 
-4.  **Start Service**
-    Ensure the remote **Custom Image Gateway** service is started and accessible.
+> **如果您有改进建议或新想法，欢迎通过提交 issue 与我们分享——我们会认真评估并采纳合适的建议。**
 
-5.  **Verification**
-    Create a new note, copy an image into it, and check if the upload is successful.
+## 🚀 快速开始
 
-## ⚙️ Backend Service (API Gateway)
+1.  **安装插件**
+    打开 Obsidian 社区插件市场，搜索 **Custom Image Auto Uploader** 并安装。
 
-The advanced features of this plugin require the use of **Custom Image Gateway**.
+2.  **配置网关 (可选)**
+    若使用自建图床，请将 **上传设置** > **API 网关地址** 设置为您的 **Custom Image Gateway** 地址。
+    > 例如: `http://127.0.0.1:9000/api/upload`
 
-> **Custom Image Gateway** is a free and open-source image upload gateway tool.
+3.  **配置鉴权**
+    设置 **API 访问令牌** (Token) 以确保安全。
 
-*   **Project Address**: [haierkeys/custom-image-gateway](https://github.com/haierkeys/custom-image-gateway)
-*   **Deployment Documentation**: Please refer to the project homepage for deployment.
+4.  **启动服务**
+    确保远端 **Custom Image Gateway** 服务已启动并可访问。
 
-## ☕ Sponsorship & Support
+5.  **验证**
+    创建一个新笔记，复制图片进去，检查是否上传成功。
 
-If you find this plugin very useful and want to support its continued development, feel free to buy me a coffee:
+## ⚙️ 后端服务 (API 网关)
+
+本插件的高级功能需要配合 **Custom Image Gateway** 使用。
+
+> **Custom Image Gateway** 是一个免费开源的图片上传网关工具。
+
+*   **项目地址**: [haierkeys/custom-image-gateway](https://github.com/haierkeys/custom-image-gateway)
+*   **部署文档**: 请参考项目主页进行部署。
+
+## ☕ 赞助与支持
+
+如果觉得这个插件很有用，并且想要支持它的继续开发，欢迎请我喝杯咖啡：
 
 [<img src="https://cdn.ko-fi.com/cdn/kofi3.png?v=3" alt="BuyMeACoffee" width="100">](https://ko-fi.com/haierkeys)
