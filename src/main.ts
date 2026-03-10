@@ -271,10 +271,11 @@ export default class CustomImageAutoUploader extends Plugin {
 
 
     const uploadTasks: UploadTask[] = []
-    // Upload only supports Wikilink format now: ![[image.png]]
-    const matches = fileContent.matchAll(wikilinkImageRegex)
     const uniqueTask = new Set<string>()
-    for (const match of matches) {
+
+    // 1. 匹配 WikiLink 格式: ![[image.png]] 或 ![[image.png|alt]]
+    const wikilinkMatches = fileContent.matchAll(wikilinkImageRegex)
+    for (const match of wikilinkMatches) {
       if (uniqueTask.has(match[0])) continue
       uniqueTask.add(match[0])
 
@@ -289,6 +290,32 @@ export default class CustomImageAutoUploader extends Plugin {
 
       // match[2] is the alt
       const imageAlt = match[2] ? match[2] : file
+      uploadTasks.push({
+        matchText: match[0],
+        imageAlt,
+        imageFile: readfile,
+      })
+      this.uploadStatus.total++
+      statusCheck(this)
+    }
+
+    // 2. 匹配 Markdown 格式: ![alt](path) - 仅处理本地路径
+    const markdownMatches = fileContent.matchAll(markdownImageRegex)
+    for (const match of markdownMatches) {
+      if (uniqueTask.has(match[0])) continue
+      uniqueTask.add(match[0])
+
+      // match[2] is the path/url
+      // 跳过远程图片（http/https 开头）
+      if (/^https?:\/\//.test(match[2])) {
+        continue
+      }
+
+      const file = match[2]
+      let readfile = await getAttachmentUploadPath(file, this)
+      if (!readfile) continue
+
+      const imageAlt = match[1] || file
       uploadTasks.push({
         matchText: match[0],
         imageAlt,
@@ -532,17 +559,46 @@ export default class CustomImageAutoUploader extends Plugin {
       for (const file of files) {
         const content = await this.app.vault.read(file)
         const fileTasks: UploadTask[] = []
-        const matches = content.matchAll(wikilinkImageRegex)
+        const uniqueTask = new Set<string>()
 
-        for (const match of matches) {
+        // 1. 匹配 WikiLink 格式: ![[image.png]]
+        const wikilinkMatches = content.matchAll(wikilinkImageRegex)
+        for (const match of wikilinkMatches) {
+          if (uniqueTask.has(match[0])) continue
+          uniqueTask.add(match[0])
+
           if (/^http/.test(match[1])) {
             continue
           }
           const linkFile = match[1]
-          let readfile = await getAttachmentUploadPath(linkFile, this)
+          let readfile = await getAttachmentUploadPath(linkFile, this, file.path)
           if (!readfile) continue
 
           const imageAlt = match[2] ? match[2] : linkFile
+          fileTasks.push({
+            matchText: match[0],
+            imageAlt,
+            imageFile: readfile,
+          })
+          this.uploadStatus.total++
+          statusCheck(this)
+        }
+
+        // 2. 匹配 Markdown 格式: ![alt](path) - 仅处理本地路径
+        const markdownMatches = content.matchAll(markdownImageRegex)
+        for (const match of markdownMatches) {
+          if (uniqueTask.has(match[0])) continue
+          uniqueTask.add(match[0])
+
+          // 跳过远程图片
+          if (/^https?:\/\//.test(match[2])) {
+            continue
+          }
+          const linkFile = match[2]
+          let readfile = await getAttachmentUploadPath(linkFile, this, file.path)
+          if (!readfile) continue
+
+          const imageAlt = match[1] || linkFile
           fileTasks.push({
             matchText: match[0],
             imageAlt,

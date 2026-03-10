@@ -153,12 +153,15 @@ export async function getAttachmentSavePath(file: string, plugin: CustomImageAut
 
 /**
  * 获取附件上传路径
- * @param image - 图片名
+ * @param image - 图片名或相对路径
  * @param plugin - 插件实例
+ * @param sourcePath - 当前笔记的路径，用于解析相对路径
  * @returns 附件上传路径
  */
-export async function getAttachmentUploadPath(image: string, plugin: CustomImageAutoUploader): Promise<TFile | null> {
-  return plugin.app.metadataCache.getFirstLinkpathDest(image, image)
+export async function getAttachmentUploadPath(image: string, plugin: CustomImageAutoUploader, sourcePath?: string): Promise<TFile | null> {
+  // 使用当前笔记路径解析相对路径，如果没有提供则使用空字符串
+  const resolveFrom = sourcePath || plugin.app.workspace.getActiveFile()?.path || ""
+  return plugin.app.metadataCache.getFirstLinkpathDest(image, resolveFrom)
 }
 
 /**
